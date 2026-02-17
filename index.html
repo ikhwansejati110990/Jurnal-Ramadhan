@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#4285f4">
+  <title>JURNAL RAMADHAN SDN MADUSELA 01</title>
+  
+  <style>
+    /* Reset CSS */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    /* Prevent pull-to-refresh on mobile */
+    html, body {
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: none;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Header - Optional, bisa dihapus jika tidak perlu */
+    .header {
+      background: rgba(255, 255, 255, 0.95);
+      padding: 10px 15px;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      z-index: 100;
+      display: none; /* Sembunyikan header, ubah ke 'flex' jika ingin ditampilkan */
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .header h1 {
+      font-size: 16px;
+      color: #333;
+      font-weight: 600;
+    }
+
+    .header .logo {
+      width: 30px;
+      height: 30px;
+    }
+
+    /* Container untuk iframe */
+    .iframe-container {
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Iframe styling */
+    .responsive-iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #fff;
+    }
+
+    /* Loading overlay */
+    .loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
+      transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    .loading-overlay.hidden {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    .loading-text {
+      color: #fff;
+      margin-top: 20px;
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Fullscreen button untuk mobile */
+    .fullscreen-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 50px;
+      height: 50px;
+      background: #4285f4;
+      border: none;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(66, 133, 244, 0.4);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .fullscreen-btn:hover {
+      transform: scale(1.1);
+      background: #3367d6;
+    }
+
+    .fullscreen-btn:active {
+      transform: scale(0.95);
+    }
+
+    /* ==================== RESPONSIVE STYLES ==================== */
+
+    /* Mobile Portrait (phones) */
+    @media screen and (max-width: 480px) {
+      .header h1 {
+        font-size: 14px;
+      }
+      
+      .fullscreen-btn {
+        width: 45px;
+        height: 45px;
+        bottom: 15px;
+        right: 15px;
+        font-size: 18px;
+      }
+    }
+
+    /* Mobile Landscape */
+    @media screen and (max-width: 896px) and (orientation: landscape) {
+      .header {
+        padding: 5px 10px;
+      }
+      
+      .header h1 {
+        font-size: 12px;
+      }
+      
+      .fullscreen-btn {
+        width: 40px;
+        height: 40px;
+        bottom: 10px;
+        right: 10px;
+        font-size: 16px;
+      }
+    }
+
+    /* Tablet */
+    @media screen and (min-width: 481px) and (max-width: 1024px) {
+      .header h1 {
+        font-size: 18px;
+      }
+      
+      .fullscreen-btn {
+        width: 55px;
+        height: 55px;
+        font-size: 22px;
+      }
+    }
+
+    /* Desktop */
+    @media screen and (min-width: 1025px) {
+      .header h1 {
+        font-size: 20px;
+      }
+      
+      .fullscreen-btn {
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
+      }
+    }
+
+    /* Notch/Safe area support untuk iPhone X+ */
+    @supports (padding: max(0px)) {
+      .header {
+        padding-top: max(10px, env(safe-area-inset-top));
+        padding-left: max(15px, env(safe-area-inset-left));
+        padding-right: max(15px, env(safe-area-inset-right));
+      }
+      
+      .fullscreen-btn {
+        bottom: max(20px, env(safe-area-inset-bottom));
+        right: max(20px, env(safe-area-inset-right));
+      }
+    }
+
+    /* Ketika dalam mode fullscreen, sembunyikan tombol */
+    :fullscreen .fullscreen-btn,
+    :-webkit-full-screen .fullscreen-btn {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Optional Header -->
+  <div class="header">
+    <h1>JURNAL RAMADHAN SDN MADUSELA 01</h1>
+  </div>
+
+  <!-- Iframe Container -->
+  <div class="iframe-container">
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+      <div class="spinner"></div>
+      <p class="loading-text">Memuat aplikasi...</p>
+    </div>
+
+    <!-- Responsive Iframe -->
+    <iframe
+      id="mainFrame"
+      class="responsive-iframe"
+      src="https://script.google.com/macros/s/AKfycbxnK4pFKJn_auL0zT777wtwqHEy8xMzdZI7OIT3Ttk0GC_7ZpkSkI-VSYN6xFnkjuLs1Q/exec"
+      allowfullscreen="true"
+      loading="lazy"
+      title="JURNAL RAMADHAN SDN MADUSELA 01">
+    </iframe>
+  </div>
+
+  <!-- Fullscreen Button -->
+  <button class="fullscreen-btn" id="fullscreenBtn" title="Mode Layar Penuh">
+    ⛶
+  </button>
+
+  <script>
+    // Elements
+    const iframe = document.getElementById('mainFrame');
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+
+    // Sembunyikan loading overlay setelah iframe dimuat
+    iframe.addEventListener('load', function() {
+      setTimeout(() => {
+        loadingOverlay.classList.add('hidden');
+      }, 500);
+    });
+
+    // Fallback jika loading terlalu lama
+    setTimeout(() => {
+      loadingOverlay.classList.add('hidden');
+    }, 10000);
+
+    // Fullscreen functionality
+    fullscreenBtn.addEventListener('click', function() {
+      const elem = document.documentElement;
+      
+      if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        // Masuk fullscreen
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) { // Safari/iOS
+          elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) { // IE11
+          elem.msRequestFullscreen();
+        }
+      } else {
+        // Keluar fullscreen
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+      }
+    });
+
+    // Update button icon berdasarkan status fullscreen
+    document.addEventListener('fullscreenchange', updateFullscreenBtn);
+    document.addEventListener('webkitfullscreenchange', updateFullscreenBtn);
+
+    function updateFullscreenBtn() {
+      if (document.fullscreenElement || document.webkitFullscreenElement) {
+        fullscreenBtn.innerHTML = '⛶'; // atau ikon minimize
+        fullscreenBtn.title = 'Keluar Layar Penuh';
+      } else {
+        fullscreenBtn.innerHTML = '⛶';
+        fullscreenBtn.title = 'Mode Layar Penuh';
+      }
+    }
+
+    // Prevent zoom on double tap untuk iOS
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(event) {
+      const now = (new Date()).getTime();
+      if (now - lastTouchEnd <= 300) {
+        event.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+
+    // Handle orientation change
+    window.addEventListener('orientationchange', function() {
+      // Force reflow untuk fix layout issues
+      setTimeout(() => {
+        window.scrollTo(0, 0);
+      }, 100);
+    });
+  </script>
+
+</body>
+</html>
